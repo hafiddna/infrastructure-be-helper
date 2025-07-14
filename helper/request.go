@@ -4,6 +4,7 @@ import (
 	"fmt"
 	goValidator "github.com/go-playground/validator/v10"
 	"github.com/minio/minio-go/v7"
+	"go.mongodb.org/mongo-driver/v2/mongo"
 	"gorm.io/gorm"
 	"reflect"
 	"strconv"
@@ -105,14 +106,15 @@ func translateTag(tag string) string {
 }
 
 type CustomValidator struct {
-	mariadb *gorm.DB
-	minio   *minio.Client
+	postgresql *gorm.DB
+	mongodb    *mongo.Database
+	minio      *minio.Client
 }
 
 func (v *CustomValidator) exist(table string, field string, val interface{}) bool {
 	var c int64
 
-	if err := v.mariadb.Table(table).Where(fmt.Sprintf("%v = ?", field), val).Limit(1).Count(&c).Error; err != nil {
+	if err := v.postgresql.Table(table).Where(fmt.Sprintf("%v = ?", field), val).Limit(1).Count(&c).Error; err != nil {
 		return false
 	}
 
@@ -140,7 +142,7 @@ func (v *CustomValidator) dbExist(fl goValidator.FieldLevel) bool {
 func (v *CustomValidator) unique(table string, field string, val interface{}) bool {
 	var c int64
 
-	if err := v.mariadb.Table(table).Unscoped().Where(fmt.Sprintf("%v = ?", field), val).Limit(1).Count(&c).Error; err != nil {
+	if err := v.postgresql.Table(table).Unscoped().Where(fmt.Sprintf("%v = ?", field), val).Limit(1).Count(&c).Error; err != nil {
 		return false
 	}
 
@@ -165,7 +167,7 @@ func (v *CustomValidator) dbUnique(fl goValidator.FieldLevel) bool {
 
 		var c int64
 
-		if err := v.mariadb.
+		if err := v.postgresql.
 			Table(table).
 			Where(fmt.Sprintf("%v = ? AND %v != ?", field, column), fl.Field().Interface(), ignoreValue).
 			Limit(1).
@@ -190,10 +192,11 @@ func (v *CustomValidator) Register(validate *goValidator.Validate) {
 	validate.RegisterValidation("unique", v.dbUnique)
 }
 
-func NewCustomValidator(mariadb *gorm.DB, minio *minio.Client) *CustomValidator {
+func NewCustomValidator(postgresql *gorm.DB, mongodb *mongo.Database, minio *minio.Client) *CustomValidator {
 	val := &CustomValidator{
-		mariadb: mariadb,
-		minio:   minio,
+		postgresql: postgresql,
+		mongodb:    mongodb,
+		minio:      minio,
 	}
 	return val
 }
