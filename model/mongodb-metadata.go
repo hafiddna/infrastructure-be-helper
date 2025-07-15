@@ -1,14 +1,15 @@
 package model
 
 import (
-	"go.mongodb.org/mongo-driver/v2/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"time"
 )
 
 type MongoDBMetadata struct {
-	ID        bson.ObjectID          `json:"id" bson:"_id,omitempty"`
-	CreatedAt bson.Timestamp         `json:"created_at" bson:"created_at"`
-	UpdatedAt bson.Timestamp         `json:"updated_at" bson:"updated_at"`
-	DeletedAt bson.Timestamp         `json:"deleted_at" bson:"deleted_at,omitempty"`
+	ID        primitive.ObjectID     `json:"id" bson:"_id"`
+	CreatedAt time.Time              `json:"created_at" bson:"created_at"`
+	UpdatedAt time.Time              `json:"updated_at" bson:"updated_at"`
+	DeletedAt *time.Time             `json:"deleted_at" bson:"deleted_at,omitempty"`
 	Metadata  map[string]interface{} `json:"metadata" bson:"metadata"`
 }
 
