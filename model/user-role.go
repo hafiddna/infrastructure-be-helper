@@ -5,8 +5,8 @@ type UserRole struct {
 	UserID string `json:"user_id"`
 	RoleID string `json:"role_id"`
 
-	Role       Role       `json:"role,omitempty"`
-	Permission Permission `json:"permission,omitempty"`
+	User User `json:"user,omitempty"`
+	Role Role `json:"role,omitempty"`
 }
 
 func (UserRole) TableName() string {
